@@ -1,8 +1,9 @@
 ﻿using System;
 
-public class Class1
+public class Competition
 {
-	public Class1()
-	{
-	}
+	public int Id {get; set;}
+	public string Name {get; set;} = string.Empty;
+	public string Country {get; set;} = string.Empty;
+	public int TeamsCount {get; set;}
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 
-public class Class1
+public class Team
 {
-	public Class1()
-	{
-	}
+	public int Id {get; set;}
+	public string TeamName {get; set;} = string.Empty;
+	public string Country {get; set;} = string.Empty;
+	public string SoccerTeam {get; set;} = string.Empty;
+	public string DtName {get; set;} = string.Empty;
 }

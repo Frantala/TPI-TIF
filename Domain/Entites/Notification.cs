@@ -1,8 +1,9 @@
 ﻿using System;
 
-public class Class1
+public class Notification
 {
-	public Class1()
-	{
-	}
+	public int Id {get; set;}
+	public string Message {get; set;} = string.Empty;
+	public string Email {get; set;} = string.Empty;
+	public string Date {get; set;} = string.Empty;
 }

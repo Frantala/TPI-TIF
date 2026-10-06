@@ -1,8 +1,7 @@
 ﻿using System;
 
-public class Class1
+public class Favourite
 {
-	public Class1()
-	{
-	}
+	public int Id {get; set;}
+	public int FavouritesCount {get; set;}
 }
