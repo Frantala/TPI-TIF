@@ -1,5 +1,6 @@
 ﻿using System;
-
+namespace Domain.Entities
+{
 public class Team
 {
 	public int Id {get; set;}
@@ -7,4 +8,5 @@ public class Team
 	public string Country {get; set;} = string.Empty;
 	public string SoccerTeam {get; set;} = string.Empty;
 	public string DtName {get; set;} = string.Empty;
+}
 }
