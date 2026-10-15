@@ -1,4 +1,5 @@
-
+using Application.Services;
+using Application.Interfaces;
 using Domain.Interfaces;
 using Infrastructure.Persistance;
 using Infrastructure.Repositories;
@@ -20,6 +21,7 @@ namespace Web
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserServices, UserService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
