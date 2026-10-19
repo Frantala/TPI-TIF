@@ -26,7 +26,7 @@ namespace Presentation.Controllers
         public ActionResult Add(CreateUserDto userDto)
         {
             _userService.Add(userDto);
-            return Ok();
+            return Created();
         }
 
         [HttpDelete("{id}")]

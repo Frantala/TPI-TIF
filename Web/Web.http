@@ -1,6 +1,22 @@
 @Web_HostAddress = http://localhost:5249
 
-GET {{Web_HostAddress}}/weatherforecast/
+### Obtener todos los usuarios
+GET {{Web_HostAddress}}/api/user
 Accept: application/json
 
 ###
+
+### Crear un usuario
+POST {{Web_HostAddress}}/api/user
+Content-Type: application/json
+
+{
+    "name": "Mati",
+    "email": "franco@gmail.com",
+    "role": "user"
+}
+
+###
+
+### Eliminar usuario con ID 1
+DELETE {{Web_HostAddress}}/api/user/1
