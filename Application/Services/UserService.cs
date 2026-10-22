@@ -13,9 +13,9 @@ namespace Application.Services
             _userRepository = userRepository;
         }
 
-        public List<UserDto> GetAll()
+        public async Task<List<UserDto>> GetAllAsync()
         {
-            var users = _userRepository.GetAll();
+            var users = await _userRepository.GetAllAsync();
 
             return users.Select(user => new UserDto
             {
@@ -26,14 +26,9 @@ namespace Application.Services
             }).ToList();
         }
 
-        public UserDto GetById(int id)
+        public async Task<UserDto> GetByIdAsync(int id)
         {
-            var user = _userRepository.GetById(id);
-
-            if (user == null)
-            {
-                throw new Exception("User not found");
-            }
+            var user = await _userRepository.GetByIdAsync(id);
 
             return new UserDto
             {
@@ -44,7 +39,7 @@ namespace Application.Services
             };
         }
 
-        public void Add(CreateUserDto userDto)
+        public async Task AddAsync(CreateUserDto userDto)
         {
             var user = new Domain.Entities.User
             {
@@ -53,35 +48,25 @@ namespace Application.Services
                 
             };
 
-            _userRepository.Add(user);
+            await _userRepository.AddAsync(user);
         }
 
-        public void Update(UserDto userDto)
+        public async Task UpdateAsync(UserDto userDto)
         {
-            var user = _userRepository.GetById(userDto.Id);
-
-            if (user == null)
-            {
-                throw new Exception("User not found");
-            }
+            var user = await _userRepository.GetByIdAsync(userDto.Id);
 
             user.Name = userDto.Name;
             user.Email = userDto.Email;
             
 
-            _userRepository.Update(user);
+            await _userRepository.UpdateAsync(user);
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var user = _userRepository.GetById(id);
+            var user = await _userRepository.GetByIdAsync(id);
 
-            if (user == null)
-            {
-                throw new Exception("User not found");
-            }
-
-            _userRepository.Delete(id);
+            await _userRepository.DeleteAsync(id);
         }
     }
 }

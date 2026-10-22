@@ -7,14 +7,14 @@ namespace Domain.Interfaces
 {
     public interface IUserRepository
     {
-        public List<User> GetAll();
+        Task <List<User>> GetAllAsync();
 
-        public User GetById(int id);
+        Task <User> GetByIdAsync(int id);
 
-        public void Add(User user);
+        Task AddAsync(User user);
 
-        public void Update(User user);
+        Task UpdateAsync(User user);
 
-        public void Delete(int id);
+        Task DeleteAsync(int id);
     }
 }

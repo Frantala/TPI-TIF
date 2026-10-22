@@ -1,6 +1,7 @@
 using Domain.Interfaces;
 using Domain.Entities;
 using Infrastructure.Persistance;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
@@ -13,14 +14,14 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public List<User> GetAll()
+        public async Task<List<User>> GetAllAsync()
         {
-            return _context.Users.ToList();
+            return await _context.Users.ToListAsync();
         }
 
-        public User GetById(int id)
+        public async Task<User> GetByIdAsync(int id)
         {
-            var users = _context.Users.FirstOrDefault(u => u.Id == id);
+            var users = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
             if (users == null)
             {
@@ -30,25 +31,25 @@ namespace Infrastructure.Repositories
             return users;
         }
 
-        public void Add(User user)
+        public async Task AddAsync(User user)
         {
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(User user)
+        public async Task UpdateAsync(User user)
         {
             _context.Users.Update(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Id == id);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user != null)
             {
                 _context.Users.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
     }

@@ -7,10 +7,10 @@ namespace Application.Interfaces
 {
     public interface IUserServices
     {
-        public List<UserDto> GetAll();
-        public UserDto GetById(int id);
-        public void Add(CreateUserDto userDto);
-        public void Update(UserDto userDto);
-        public void Delete(int id);
+        Task <List<UserDto>> GetAllAsync();
+        Task <UserDto> GetByIdAsync(int id);
+        Task AddAsync(CreateUserDto userDto);
+        Task UpdateAsync(UserDto userDto);
+        Task DeleteAsync(int id);
     }
 }

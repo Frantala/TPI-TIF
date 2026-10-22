@@ -16,23 +16,23 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetAll()
+        public async Task<ActionResult> GetAll()
         {
-            var users = _userService.GetAll();
+            var users = await _userService.GetAllAsync();
             return Ok(users);
         }
 
         [HttpPost]
-        public ActionResult Add(CreateUserDto userDto)
+        public async Task<ActionResult> Add(CreateUserDto userDto)
         {
-            _userService.Add(userDto);
+            await _userService.AddAsync(userDto);
             return Created();
         }
 
         [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            _userService.Delete(id);
+            await _userService.DeleteAsync(id);
             return Ok();
         }
     }
