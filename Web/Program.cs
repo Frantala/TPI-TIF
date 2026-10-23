@@ -41,16 +41,8 @@ namespace Web
             var audience = builder.Configuration["JwtSettings:Audience"]
                 ?? throw new InvalidOperationException(
                     "Falta configurar JwtSettings:Audience.");
-            var expirationMinutes = builder.Configuration.GetValue<int?>(
-                "JwtSettings:ExpirationMinutes") ?? 60;
-            if (expirationMinutes <= 0)
-            {
-                throw new InvalidOperationException(
-                    "JwtSettings:ExpirationMinutes debe ser mayor que cero.");
-            }
-
             builder.Services.AddScoped<IJwtService>(_ =>
-                new JwtService(jwtKey, issuer, audience, expirationMinutes));
+                new JwtService(jwtKey, issuer, audience));
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

@@ -80,17 +80,10 @@ namespace Application.Services
                 return null;
             }
 
-            var verification = _passwordHasher.VerifyHashedPassword(
-                user, user.PasswordHash, password);
-            if (verification == PasswordVerificationResult.Failed)
+            if (_passwordHasher.VerifyHashedPassword(
+                    user, user.PasswordHash, password) == PasswordVerificationResult.Failed)
             {
                 return null;
-            }
-
-            if (verification == PasswordVerificationResult.SuccessRehashNeeded)
-            {
-                user.PasswordHash = _passwordHasher.HashPassword(user, password);
-                _userRepository.Update(user);
             }
 
             return user;

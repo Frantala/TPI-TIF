@@ -13,23 +13,18 @@ namespace Application.Services
         private readonly string _secretKey;
         private readonly string _issuer;
         private readonly string _audience;
-        private readonly int _expirationMinutes;
+        private const int ExpirationMinutes = 60;
 
-        public JwtService(
-            string secretKey,
-            string issuer,
-            string audience,
-            int expirationMinutes)
+        public JwtService(string secretKey, string issuer, string audience)
         {
             _secretKey = secretKey;
             _issuer = issuer;
             _audience = audience;
-            _expirationMinutes = expirationMinutes;
         }
 
         public JwtDto GenerateToken(User user)
         {
-            var expiresAt = DateTime.UtcNow.AddMinutes(_expirationMinutes);
+            var expiresAt = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
