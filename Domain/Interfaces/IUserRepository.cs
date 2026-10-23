@@ -9,7 +9,9 @@ namespace Domain.Interfaces
     {
         public List<User> GetAll();
 
-        public User GetById(int id);
+        public User? GetById(int id);
+
+        public User? GetByEmail(string email);
 
         public void Add(User user);
 

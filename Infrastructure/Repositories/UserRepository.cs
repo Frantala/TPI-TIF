@@ -18,16 +18,15 @@ namespace Infrastructure.Repositories
             return _context.Users.ToList();
         }
 
-        public User GetById(int id)
+        public User? GetById(int id)
         {
-            var users = _context.Users.FirstOrDefault(u => u.Id == id);
+            return _context.Users.FirstOrDefault(u => u.Id == id);
+        }
 
-            if (users == null)
-            {
-                throw new Exception("User not found");
-            }
-
-            return users;
+        public User? GetByEmail(string email)
+        {
+            return _context.Users
+                .FirstOrDefault(u => u.Email == email);
         }
 
         public void Add(User user)
