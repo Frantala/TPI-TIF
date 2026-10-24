@@ -1,3 +1,9 @@
+using Application.Services;
+using Application.Interfaces;
+using Domain.Interfaces;
+using Infrastructure.Persistance;
+using Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Web
 {
@@ -8,6 +14,14 @@ namespace Web
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException(
+                    "No se encontró la cadena de conexión 'DefaultConnection'.");
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString));
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserServices, UserService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
