@@ -6,7 +6,9 @@ using Infrastructure.Persistance;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi;
 using Microsoft.IdentityModel.Tokens;
+using NSwag.AspNetCore;
 
 namespace Web
 {
@@ -46,7 +48,40 @@ namespace Web
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            builder.Services.AddOpenApi(options =>
+            {
+                options.AddDocumentTransformer((document, _, _) =>
+                {
+                    var components = document.Components;
+                    if (components is null)
+                    {
+                        components = new OpenApiComponents();
+                        document.Components = components;
+                    }
+
+                    components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+                    components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
+                    {
+                        Type = SecuritySchemeType.Http,
+                        Scheme = "bearer",
+                        BearerFormat = "JWT"
+                    });
+
+                    var securityRequirements = document.Security;
+                    if (securityRequirements is null)
+                    {
+                        securityRequirements = [];
+                        document.Security = securityRequirements;
+                    }
+
+                    securityRequirements.Add(new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                    });
+
+                    return Task.CompletedTask;
+                });
+            });
 
             builder.Services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -74,6 +109,9 @@ namespace Web
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.UseSwaggerUi(settings =>
+                    settings.SwaggerRoutes.Add(
+                        new SwaggerUiRoute("TPI-TIF API v1", "/openapi/v1.json")));
             }
 
             app.UseHttpsRedirection();
