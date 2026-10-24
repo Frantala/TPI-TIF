@@ -1,12 +1,14 @@
 ﻿using Application.Dto;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Presentation.Controllers
+namespace Web.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public sealed class UserController : ControllerBase
     {
         private readonly IUserServices _userService;
 
@@ -16,24 +18,40 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetAll()
+        public ActionResult<List<UserDto>> GetAll()
         {
-            var users = _userService.GetAll();
-            return Ok(users);
+            return Ok(_userService.GetAll());
+        }
+
+        [HttpGet("{id:int}", Name = "GetUserById")]
+        public ActionResult<UserDto> GetById(int id)
+        {
+            var user = _userService.GetById(id);
+            return user is null ? NotFound() : Ok(user);
         }
 
         [HttpPost]
-        public ActionResult Add(CreateUserDto userDto)
+        public ActionResult<UserDto> Add(CreateUserDto userDto)
         {
-            _userService.Add(userDto);
-            return Created();
+            if (_userService.EmailExists(userDto.Email))
+            {
+                return Conflict();
+            }
+
+            var user = _userService.Add(userDto);
+            return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
+            if (_userService.GetById(id) is null)
+            {
+                return NotFound();
+            }
+
             _userService.Delete(id);
-            return Ok();
+            return NoContent();
         }
     }
 }
