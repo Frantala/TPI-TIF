@@ -15,6 +15,8 @@ namespace Application.Interfaces
         Task DeleteAsync(int id);
         Task<bool> EmailExistsAsync(string email);
         Task<User?> AuthenticateAsync(string email, string password);
+        Task<UserDto?> PromoteToAdminAsync(int id);
+        
 
     }
 }

@@ -118,5 +118,25 @@ namespace Application.Services
             await _userRepository.DeleteAsync(id);
 
         }
+        public async Task<UserDto?> PromoteToAdminAsync(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+
+            if (user is null)
+            {
+                return null;
+            }
+
+            user.Role = "Admin";
+            await _userRepository.UpdateAsync(user);
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Role = user.Role
+            };
+        }
     }
 }
