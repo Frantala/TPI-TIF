@@ -1,22 +1,31 @@
 @Web_HostAddress = http://localhost:5249
 
-### Obtener todos los usuarios
-GET {{Web_HostAddress}}/api/user
+### Registrar usuario (nuevo usuario)
+POST {{Web_HostAddress}}/api/auth/register
 Accept: application/json
-
-###
-
-### Crear un usuario
-POST {{Web_HostAddress}}/api/user
 Content-Type: application/json
 
 {
     "name": "Mati",
-    "email": "franco@gmail.com",
-    "role": "user"
+    "email": "mati@example.com",
+    "password": "UnaClaveSegura123"
 }
 
 ###
 
-### Eliminar usuario con ID 1
-DELETE {{Web_HostAddress}}/api/user/1
+### Iniciar sesión
+POST {{Web_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "mati@example.com",
+    "password": "UnaClaveSegura123"
+}
+
+###
+
+### Consultar usuarios (reemplazar el token por accessToken devuelto por login)
+@accessToken = pegar-token-aqui
+GET {{Web_HostAddress}}/api/user
+Authorization: Bearer {{accessToken}}
+Accept: application/json
