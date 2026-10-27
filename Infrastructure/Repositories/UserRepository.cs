@@ -15,64 +15,65 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public List<User> GetAll()
+        public async Task<List<User>> GetAllAsync()
         {
-            return _context.Users.OrderBy(user => user.Id).ToList();
+            return await _context.Users.OrderBy(user => user.Id).ToListAsync();
         }
 
-        public User? GetById(int id)
+        public async Task<User?> GetByIdAsync(int id)
         {
-            return _context.Users.FirstOrDefault(u => u.Id == id);
+            return await _context.Users.FirstOrDefaultAsync(user => user.Id == id);
         }
 
-        public User? GetByEmail(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
-            return _context.Users
-                .FirstOrDefault(u => u.Email == email);
+            return await _context.Users.
+                FirstOrDefaultAsync(user => user.Email == email);
         }
 
-        public void Add(User user)
+        public async Task AddAsync(User user)
         {
-            using var transaction = _context.Database.BeginTransaction(
+            await using var transaction = await _context.Database.BeginTransactionAsync(
                 IsolationLevel.Serializable);
-            if (!_context.Users.Any())
+            if (!await _context.Users.AnyAsync())
             {
-                ResetIdentity();
+                await ResetIdentityAsync();
             }
 
-            _context.Users.Add(user);
-            _context.SaveChanges();
-            transaction.Commit();
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
         }
 
-        public void Update(User user)
+        public async Task UpdateAsync(User user)
         {
             _context.Users.Update(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            using var transaction = _context.Database.BeginTransaction(
+            await using var transaction = await _context.Database.BeginTransactionAsync(
                 IsolationLevel.Serializable);
-            var user = _context.Users.FirstOrDefault(user => user.Id == id);
+
+            var user = await _context.Users.FirstOrDefaultAsync(user => user.Id == id);
             if (user != null)
             {
                 _context.Users.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
-                if (!_context.Users.Any())
+                if (!await _context.Users.AnyAsync())
                 {
-                    ResetIdentity();
+                    await ResetIdentityAsync();
                 }
             }
 
-            transaction.Commit();
+            await transaction.CommitAsync();
         }
 
-        private void ResetIdentity()
+        private async Task ResetIdentityAsync()
         {
-            _context.Database.ExecuteSqlRaw(
+            await _context.Database.ExecuteSqlRawAsync(
                 "DBCC CHECKIDENT ('Users', RESEED, 0)");
         }
     }

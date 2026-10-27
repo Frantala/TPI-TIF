@@ -7,16 +7,11 @@ namespace Domain.Interfaces
 {
     public interface IUserRepository
     {
-        public List<User> GetAll();
-
-        public User? GetById(int id);
-
-        public User? GetByEmail(string email);
-
-        public void Add(User user);
-
-        public void Update(User user);
-
-        public void Delete(int id);
+        Task <List<User>> GetAllAsync();
+        Task <User?> GetByIdAsync(int id);
+        Task <User?> GetByEmailAsync(string email);
+        Task AddAsync(User user);
+        Task UpdateAsync(User user);
+        Task DeleteAsync(int id);
     }
 }

@@ -22,9 +22,9 @@ namespace Web.Controllers
         [HttpPost("register")]
         [ProducesResponseType<UserDto>(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public ActionResult<UserDto> Register(CreateUserDto request)
+        public async Task<ActionResult<UserDto>> Register(CreateUserDto request)
         {
-            if (_userService.EmailExists(request.Email))
+            if (await _userService.EmailExistsAsync(request.Email))
             {
                 return Conflict(new ProblemDetails
                 {
@@ -33,16 +33,16 @@ namespace Web.Controllers
                 });
             }
 
-            var user = _userService.Add(request);
+            var user = await _userService.AddAsync(request);
             return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
         }
 
         [HttpPost("login")]
         [ProducesResponseType<JwtDto>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult<JwtDto> Login(LoginDto request)
+        public async Task<ActionResult<JwtDto>> Login(LoginDto request)
         {
-            var user = _userService.Authenticate(request.Email, request.Password);
+            var user = await _userService.AuthenticateAsync(request.Email, request.Password);
             if (user is null)
             {
                 return Unauthorized(new ProblemDetails

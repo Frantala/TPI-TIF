@@ -18,39 +18,39 @@ namespace Web.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<UserDto>> GetAll()
+        public async Task<ActionResult<List<UserDto>>> GetAll()
         {
-            return Ok(_userService.GetAll());
+            return Ok(await _userService.GetAllAsync());
         }
 
         [HttpGet("{id:int}", Name = "GetUserById")]
-        public ActionResult<UserDto> GetById(int id)
+        public async Task<ActionResult<UserDto>> GetById(int id)
         {
-            var user = _userService.GetById(id);
+            var user = await _userService.GetByIdAsync(id);
             return user is null ? NotFound() : Ok(user);
         }
 
         [HttpPost]
-        public ActionResult<UserDto> Add(CreateUserDto userDto)
+        public async Task<ActionResult<UserDto>> Add(CreateUserDto userDto)
         {
-            if (_userService.EmailExists(userDto.Email))
+            if (await _userService.EmailExistsAsync(userDto.Email))
             {
                 return Conflict();
             }
 
-            var user = _userService.Add(userDto);
+            var user = await _userService.AddAsync(userDto);
             return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            if (_userService.GetById(id) is null)
+            if (await _userService.GetByIdAsync(id) is null)
             {
                 return NotFound();
             }
 
-            _userService.Delete(id);
+            await _userService.DeleteAsync(id);
             return NoContent();
         }
     }
