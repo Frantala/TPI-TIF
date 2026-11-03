@@ -101,6 +101,19 @@ namespace Web
                     };
                 });
 
+                // registro de clientes de api externa de futbol
+                var baseUrl = builder.Configuration["ApisExternas:ApiFootball:BaseUrl"]
+    ?? throw new InvalidOperationException("Falta configurar la URL de API-Football.");
+
+var apiKey = builder.Configuration["ApisExternas:ApiFootball:ApiKey"]
+    ?? throw new InvalidOperationException("Falta configurar la API key de API-Football.");
+
+builder.Services.AddHttpClient(HttpClientNames.ApiFootball, client =>
+{
+    client.BaseAddress = new Uri(baseUrl);
+    client.DefaultRequestHeaders.Add("x-apisports-key", apiKey);
+});
+
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
