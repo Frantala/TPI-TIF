@@ -29,6 +29,7 @@ namespace Web
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserServices, UserService>();
             builder.Services.AddScoped<ICompetitionExternalService, CompetitionExternalService>();
+            builder.Services.AddScoped<ITeamExternalService,TeamExternalService>();
 
             var jwtKey = builder.Configuration["JwtSettings:SecretKey"]
                 ?? throw new InvalidOperationException(
@@ -113,8 +114,7 @@ var apiFootballApiKey = builder.Configuration[
     "ApisExternas:ApiFootball:ApiKey"
 ];
 
-Console.WriteLine($"API Football BaseUrl: {apiFootballBaseUrl}");
-Console.WriteLine($"API Football ApiKey configurada: {!string.IsNullOrEmpty(apiFootballApiKey)}");
+
 
 builder.Services.AddHttpClient(
     Infrastructure.ExternalServices.ApiFootball.HttpClientNames.ApiFootball,
