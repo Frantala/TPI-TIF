@@ -4,6 +4,7 @@ using Application.Interfaces;
 using Domain.Interfaces;
 using Infrastructure.Persistance;
 using Infrastructure.Repositories;
+using Infrastructure.ExternalServices.ApiFootball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
@@ -101,18 +102,28 @@ namespace Web
                     };
                 });
 
-                // registro de clientes de api externa de futbol
-                var baseUrl = builder.Configuration["ApisExternas:ApiFootball:BaseUrl"]
-    ?? throw new InvalidOperationException("Falta configurar la URL de API-Football.");
+                var apiFootballBaseUrl = builder.Configuration[
+    "ApisExternas:ApiFootball:BaseUrl"
+];
 
-var apiKey = builder.Configuration["ApisExternas:ApiFootball:ApiKey"]
-    ?? throw new InvalidOperationException("Falta configurar la API key de API-Football.");
+var apiFootballApiKey = builder.Configuration[
+    "ApisExternas:ApiFootball:ApiKey"
+];
 
-builder.Services.AddHttpClient(HttpClientNames.ApiFootball, client =>
-{
-    client.BaseAddress = new Uri(baseUrl);
-    client.DefaultRequestHeaders.Add("x-apisports-key", apiKey);
-});
+builder.Services.AddHttpClient(
+    HttpClientNames.ApiFootball,
+    client =>
+    {
+        client.BaseAddress = new Uri(apiFootballBaseUrl!);
+
+        client.DefaultRequestHeaders.Add(
+            "x-apisports-key",
+            apiFootballApiKey
+        );
+
+        client.Timeout = TimeSpan.FromSeconds(30);
+    }
+);
 
             builder.Services.AddAuthorization();
 
