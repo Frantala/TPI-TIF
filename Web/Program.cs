@@ -135,14 +135,14 @@ builder.Services.AddHttpClient(
             builder.Services.AddAuthorization();
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-                app.UseSwaggerUi(settings =>
-                    settings.SwaggerRoutes.Add(
-                        new SwaggerUiRoute("TPI-TIF API v1", "/openapi/v1.json")));
-            }
+            app.MapOpenApi();
+
+            app.UseSwaggerUi(settings =>
+                settings.SwaggerRoutes.Add(
+                    new SwaggerUiRoute("TPI-TIF API v1", "/openapi/v1.json")));
+
+            app.MapGet("/", () => Results.Redirect("/swagger"))
+            .ExcludeFromDescription();
 
             app.UseHttpsRedirection();
             app.UseAuthentication();
