@@ -2,15 +2,21 @@
 using System.Collections.Generic;
 using System.Text;
 using Application.Dto;
+using Domain.Entities;
 
 namespace Application.Interfaces
 {
     public interface IUserServices
     {
-        public List<UserDto> GetAll();
-        public UserDto GetById(int id);
-        public void Add(CreateUserDto userDto);
-        public void Update(UserDto userDto);
-        public void Delete(int id);
+        Task <List<UserDto>> GetAllAsync();
+        Task <UserDto?> GetByIdAsync(int id);
+        Task <UserDto> AddAsync(CreateUserDto userDto);
+        Task UpdateAsync(UserDto userDto);
+        Task DeleteAsync(int id);
+        Task<bool> EmailExistsAsync(string email);
+        Task<User?> AuthenticateAsync(string email, string password);
+        Task<UserDto?> PromoteToAdminAsync(int id);
+        
+
     }
 }

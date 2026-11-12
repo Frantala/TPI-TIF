@@ -1,12 +1,15 @@
 ﻿using Application.Dto;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace Presentation.Controllers
+namespace Web.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    [Authorize]
+    [Route("api/usuarios")]
+    public sealed class UserController : ControllerBase
     {
         private readonly IUserServices _userService;
 
@@ -16,24 +19,60 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetAll()
+        [Authorize(Roles = "Usuario, Admin,SuperAdmin")]
+        public async Task<ActionResult<List<UserDto>>> GetAll()
         {
-            var users = _userService.GetAll();
-            return Ok(users);
+            return Ok(await _userService.GetAllAsync());
+        }
+
+        [HttpGet("{id:int}", Name = "GetUserById")]
+        [Authorize(Roles = "Usuario, Admin,SuperAdmin")]
+        public async Task<ActionResult<UserDto>> GetById(int id)
+        {
+            var user = await _userService.GetByIdAsync(id);
+            return user is null ? NotFound() : Ok(user);
         }
 
         [HttpPost]
-        public ActionResult Add(CreateUserDto userDto)
+        [Authorize(Roles = "Usuario, Admin,SuperAdmin")]
+        public async Task<ActionResult<UserDto>> Add(CreateUserDto userDto)
         {
-            _userService.Add(userDto);
-            return Created();
+            if (await _userService.EmailExistsAsync(userDto.Email))
+            {
+                return Conflict();
+            }
+
+            var user = await _userService.AddAsync(userDto);
+            return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
         }
 
-        [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Usuario, Admin,SuperAdmin")]
+        public async Task<ActionResult> Delete(int id)
         {
-            _userService.Delete(id);
-            return Ok();
+            if (await _userService.GetByIdAsync(id) is null)
+            {
+                return NotFound();
+            }
+
+            await _userService.DeleteAsync(id);
+            return NoContent();
         }
+        [HttpPatch("{id:int}/ascender-a-admin")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<ActionResult<UserDto>> MakeAdmin(int id)
+        {
+            var user = await _userService.PromoteToAdminAsync(id);
+
+            if (user is null)
+            {
+                return NotFound(new { message = "Usuario no encontrado." });
+            }
+
+            return Ok(user);
+        }
+        
+
     }
 }
+
