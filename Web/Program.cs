@@ -25,7 +25,8 @@ namespace Web
                     "No se encontró la cadena de conexión 'DefaultConnection'.");
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString,
+                   sql => sql.EnableRetryOnFailure()));
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserServices, UserService>();
             builder.Services.AddScoped<ICompetitionExternalService, CompetitionExternalService>();
