@@ -19,14 +19,14 @@ namespace Web.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Usuario, Admin,SuperAdmin")]
+        [Authorize(Roles = "user, Admin,SuperAdmin")]
         public async Task<ActionResult<List<UserDto>>> GetAll()
         {
             return Ok(await _userService.GetAllAsync());
         }
 
         [HttpGet("{id:int}", Name = "GetUserById")]
-        [Authorize(Roles = "Usuario, Admin,SuperAdmin")]
+        [Authorize(Roles = "user, Admin,SuperAdmin")]
         public async Task<ActionResult<UserDto>> GetById(int id)
         {
             var user = await _userService.GetByIdAsync(id);
@@ -47,7 +47,7 @@ namespace Web.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Usuario, Admin,SuperAdmin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult> Delete(int id)
         {
             if (await _userService.GetByIdAsync(id) is null)
