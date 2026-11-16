@@ -34,7 +34,7 @@ namespace Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Usuario, Admin,SuperAdmin")]
+        [Authorize(Roles = "user, Admin,SuperAdmin")]
         public async Task<ActionResult<UserDto>> Add(CreateUserDto userDto)
         {
             if (await _userService.EmailExistsAsync(userDto.Email))
