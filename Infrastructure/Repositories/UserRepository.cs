@@ -33,16 +33,22 @@ namespace Infrastructure.Repositories
 
         public async Task AddAsync(User user)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync(
-                IsolationLevel.Serializable);
-            if (!await _context.Users.AnyAsync())
-            {
-                await ResetIdentityAsync();
-            }
+            var strategy = _context.Database.CreateExecutionStrategy();
 
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync(
+                    IsolationLevel.Serializable);
+
+                if (!await _context.Users.AnyAsync())
+                {
+                    await ResetIdentityAsync();
+                }
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            });
         }
 
         public async Task UpdateAsync(User user)
@@ -53,22 +59,27 @@ namespace Infrastructure.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync(
-                IsolationLevel.Serializable);
+            var strategy = _context.Database.CreateExecutionStrategy();
 
-            var user = await _context.Users.FirstOrDefaultAsync(user => user.Id == id);
-            if (user != null)
+            await strategy.ExecuteAsync(async () =>
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+                await using var transaction = await _context.Database.BeginTransactionAsync(
+                    IsolationLevel.Serializable);
 
-                if (!await _context.Users.AnyAsync())
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+                if (user != null)
                 {
-                    await ResetIdentityAsync();
-                }
-            }
+                    _context.Users.Remove(user);
+                    await _context.SaveChangesAsync();
 
-            await transaction.CommitAsync();
+                    if (!await _context.Users.AnyAsync())
+                    {
+                        await ResetIdentityAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
+            });
         }
 
         private async Task ResetIdentityAsync()
