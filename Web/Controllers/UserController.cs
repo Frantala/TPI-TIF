@@ -33,19 +33,6 @@ namespace Web.Controllers
             return user is null ? NotFound() : Ok(user);
         }
 
-        [HttpPost]
-        [Authorize(Roles = "user, Admin,SuperAdmin")]
-        public async Task<ActionResult<UserDto>> Add(CreateUserDto userDto)
-        {
-            if (await _userService.EmailExistsAsync(userDto.Email))
-            {
-                return Conflict();
-            }
-
-            var user = await _userService.AddAsync(userDto);
-            return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
-        }
-
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult> Delete(int id)
@@ -58,6 +45,7 @@ namespace Web.Controllers
             await _userService.DeleteAsync(id);
             return NoContent();
         }
+        
         [HttpPatch("{id:int}/ascender-a-admin")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<UserDto>> MakeAdmin(int id)
