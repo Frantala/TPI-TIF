@@ -8,6 +8,7 @@ using Infrastructure.Repositories;
 using Infrastructure.ExternalServices.ApiFootball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
 using Microsoft.IdentityModel.Tokens;
 using NSwag.AspNetCore;
@@ -75,17 +76,27 @@ namespace Web
                         BearerFormat = "JWT"
                     });
 
-                    var securityRequirements = document.Security;
-                    if (securityRequirements is null)
-                    {
-                        securityRequirements = [];
-                        document.Security = securityRequirements;
-                    }
+                    return Task.CompletedTask;
+                });
+                options.AddOperationTransformer((operation, context, _) =>
+                {
+                    var endpointMetadata =
+                        context.Description.ActionDescriptor.EndpointMetadata;
+                    var allowsAnonymous =
+                        endpointMetadata.OfType<IAllowAnonymous>().Any();
+                    var requiresAuthorization =
+                        endpointMetadata.OfType<IAuthorizeData>().Any();
 
-                    securityRequirements.Add(new OpenApiSecurityRequirement
+                    if (requiresAuthorization && !allowsAnonymous)
                     {
-                        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-                    });
+                        operation.Security ??= [];
+                        operation.Security.Add(new OpenApiSecurityRequirement
+                        {
+                            [new OpenApiSecuritySchemeReference(
+                                "Bearer",
+                                context.Document)] = []
+                        });
+                    }
 
                     return Task.CompletedTask;
                 });

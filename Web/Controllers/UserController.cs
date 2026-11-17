@@ -50,17 +50,75 @@ namespace Web.Controllers
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<UserDto>> MakeAdmin(int id)
         {
-            var user = await _userService.PromoteToAdminAsync(id);
+            return await ChangeRoleAsync(
+                id,
+                "user",
+                _userService.PromoteToAdminAsync,
+                "Solo se puede ascender a Admin a usuarios con rol user.");
+        }
+
+        [HttpPatch("{id:int}/descender-a-user")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<ActionResult<UserDto>> DemoteAdmin(int id)
+        {
+            return await ChangeRoleAsync(
+                id,
+                "Admin",
+                _userService.DemoteAdminToUserAsync,
+                "Solo se puede descender a user a usuarios con rol Admin.");
+        }
+
+        [HttpPatch("{id:int}/ascender-a-superadmin")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<ActionResult<UserDto>> PromoteToSuperAdmin(int id)
+        {
+            return await ChangeRoleAsync(
+                id,
+                "Admin",
+                _userService.PromoteAdminToSuperAdminAsync,
+                "Solo se puede ascender a SuperAdmin a usuarios con rol Admin.");
+        }
+
+        private async Task<ActionResult<UserDto>> ChangeRoleAsync(
+            int id,
+            string expectedRole,
+            Func<int, Task<UserDto?>> changeRole,
+            string invalidRoleMessage)
+        {
+            var user = await _userService.GetByIdAsync(id);
 
             if (user is null)
             {
-                return NotFound(new { message = "Usuario no encontrado." });
+                return NotFound(new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Usuario no encontrado."
+                });
             }
 
-            return Ok(user);
-        }
-        
+            if (!string.Equals(user.Role, expectedRole, StringComparison.Ordinal))
+            {
+                return Conflict(new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Transición de rol no válida.",
+                    Detail = invalidRoleMessage
+                });
+            }
 
+            var updatedUser = await changeRole(id);
+            if (updatedUser is null)
+            {
+                return Conflict(new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "No se pudo actualizar el rol.",
+                    Detail = "El usuario pudo haber cambiado de rol durante la operación."
+                });
+            }
+
+            return Ok(updatedUser);
+        }
     }
 }
 

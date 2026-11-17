@@ -17,20 +17,38 @@ namespace Infrastructure.Persistance.Seeders
         {
             email = email.Trim();
 
-            var existingSuperAdminEmail = await context.Users
+            var existingSuperAdmin = await context.Users
                 .Where(user => user.Role == "SuperAdmin")
-                .Select(user => user.Email)
                 .FirstOrDefaultAsync();
 
-            if (existingSuperAdminEmail is not null)
+            var hasher = new PasswordHasher<User>();
+
+            if (existingSuperAdmin is not null)
             {
                 if (string.Equals(
-                        existingSuperAdminEmail,
+                        existingSuperAdmin.Email,
                         email,
                         StringComparison.OrdinalIgnoreCase))
                 {
-                    logger.LogInformation(
-                        "Admin seeding skipped: the configured SuperAdmin already exists. Its password was not changed.");
+                    var verificationResult = hasher.VerifyHashedPassword(
+                        existingSuperAdmin,
+                        existingSuperAdmin.PasswordHash,
+                        password);
+
+                    if (verificationResult == PasswordVerificationResult.Failed)
+                    {
+                        existingSuperAdmin.PasswordHash = hasher.HashPassword(
+                            existingSuperAdmin,
+                            password);
+                        await context.SaveChangesAsync();
+                        logger.LogInformation(
+                            "Configured SuperAdmin password synchronized.");
+                    }
+                    else
+                    {
+                        logger.LogInformation(
+                            "Admin seeding skipped: the configured SuperAdmin already exists.");
+                    }
                 }
                 else
                 {
@@ -58,8 +76,6 @@ namespace Infrastructure.Persistance.Seeders
                 Email = email,
                 Role = "SuperAdmin"
             };
-
-            var hasher = new PasswordHasher<User>();
 
             admin.PasswordHash = hasher.HashPassword(
                 admin,
