@@ -2,8 +2,7 @@ using Domain.Entities;
 
 namespace Domain.Interfaces
 {
-    public interface ITeamRepository
+    public interface ITeamRepository : IGenericRepository<Team>
     {
-        Task<Team?> GetByIdAsync(int id);
     }
 }

@@ -29,6 +29,7 @@ namespace Web
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString,
                    sql => sql.EnableRetryOnFailure()));
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserServices, UserService>();
             builder.Services.AddScoped<ICompetitionExternalService, CompetitionExternalService>();

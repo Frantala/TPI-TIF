@@ -6,74 +6,65 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : GenericRepository<User>, IUserRepository
     {
-        private readonly ApplicationDbContext _context;
-
-        public UserRepository(ApplicationDbContext context)
+        public UserRepository(ApplicationDbContext context) : base(context)
         {
-            _context = context;
         }
 
-        public async Task<List<User>> GetAllAsync()
+        public override async Task<List<User>> GetAllAsync()
         {
-            return await _context.Users.OrderBy(user => user.Id).ToListAsync();
-        }
-
-        public async Task<User?> GetByIdAsync(int id)
-        {
-            return await _context.Users.FirstOrDefaultAsync(user => user.Id == id);
+            return await Context.Users.OrderBy(user => user.Id).ToListAsync();
         }
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await _context.Users.
-                FirstOrDefaultAsync(user => user.Email == email);
+            return await Context.Users
+                .FirstOrDefaultAsync(user => user.Email == email);
         }
 
-        public async Task AddAsync(User user)
+        public override async Task AddAsync(User user)
         {
-            var strategy = _context.Database.CreateExecutionStrategy();
+            var strategy = Context.Database.CreateExecutionStrategy();
 
             await strategy.ExecuteAsync(async () =>
             {
-                await using var transaction = await _context.Database.BeginTransactionAsync(
+                await using var transaction = await Context.Database.BeginTransactionAsync(
                     IsolationLevel.Serializable);
 
-                if (!await _context.Users.AnyAsync())
+                if (!await Context.Users.AnyAsync())
                 {
                     await ResetIdentityAsync();
                 }
 
-                await _context.Users.AddAsync(user);
-                await _context.SaveChangesAsync();
+                await Context.Users.AddAsync(user);
+                await Context.SaveChangesAsync();
                 await transaction.CommitAsync();
             });
         }
 
-
-        public async Task UpdateAsync(User user)
+        public override async Task UpdateAsync(User user)
         {
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            Context.Users.Update(user);
+            await Context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public override async Task DeleteAsync(int id)
         {
-            var strategy = _context.Database.CreateExecutionStrategy();
+            var strategy = Context.Database.CreateExecutionStrategy();
 
             await strategy.ExecuteAsync(async () =>
             {
-                await using var transaction = await _context.Database.BeginTransactionAsync(
+                await using var transaction = await Context.Database.BeginTransactionAsync(
                     IsolationLevel.Serializable);
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+                var user = await Context.Users.FirstOrDefaultAsync(u => u.Id == id);
                 if (user != null)
                 {
-                    _context.Users.Remove(user);
-                    await _context.SaveChangesAsync();
+                    Context.Users.Remove(user);
+                    await Context.SaveChangesAsync();
 
-                    if (!await _context.Users.AnyAsync())
+                    if (!await Context.Users.AnyAsync())
                     {
                         await ResetIdentityAsync();
                     }
@@ -85,7 +76,7 @@ namespace Infrastructure.Repositories
 
         private async Task ResetIdentityAsync()
         {
-            await _context.Database.ExecuteSqlRawAsync(
+            await Context.Database.ExecuteSqlRawAsync(
                 "DBCC CHECKIDENT ('Users', RESEED, 0)");
         }
     }
