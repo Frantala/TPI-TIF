@@ -34,6 +34,10 @@ namespace Web
             builder.Services.AddScoped<IFavouriteRepository, FavouriteRepository>();
             builder.Services.AddScoped<ITeamRepository, TeamRepository>();
             builder.Services.AddScoped<IFavouriteService, FavouriteService>();
+            builder.Services.AddScoped<ICompetitionRepository, CompetitionRepository>();
+            builder.Services.AddScoped<ICompetitionService, CompetitionService>();
+            builder.Services.AddScoped<ITeamService, TeamService>();
+
 
             var jwtKey = builder.Configuration["JwtSettings:SecretKey"]
                 ?? throw new InvalidOperationException(
