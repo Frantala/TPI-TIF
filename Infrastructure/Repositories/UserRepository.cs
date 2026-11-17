@@ -51,6 +51,7 @@ namespace Infrastructure.Repositories
             });
         }
 
+
         public async Task UpdateAsync(User user)
         {
             _context.Users.Update(user);

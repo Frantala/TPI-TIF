@@ -74,22 +74,31 @@ namespace Application.Services
         }
 
         public async Task<User?> AuthenticateAsync(string email, string password)
-        {
-            var user = await _userRepository.GetByEmailAsync(email.Trim());
-            if (user is null)
-            {
-                return null;
-            }
+{
+    var user = await _userRepository.GetByEmailAsync(email.Trim());
 
-            if (_passwordHasher.VerifyHashedPassword(
-                    user, user.PasswordHash, password) == PasswordVerificationResult.Failed)
-            {
-                return null;
-            }
+    if (user is null)
+    {
+        Console.WriteLine("RESULTADO: Usuario no encontrado.");
+        return null;
+    }
 
-            return user;
-        }
+    Console.WriteLine($"RESULTADO: Usuario encontrado: {user.Email}");
+    Console.WriteLine($"RESULTADO: Rol: {user.Role}");
 
+    var result = _passwordHasher.VerifyHashedPassword(
+        user,
+        user.PasswordHash,
+        password
+    );
+
+    Console.WriteLine($"RESULTADO: Verificación: {result}");
+
+    if (result == PasswordVerificationResult.Failed)
+        return null;
+
+    return user;
+}
         public async Task UpdateAsync(UserDto userDto)
         {
             var user = await _userRepository.GetByIdAsync(userDto.Id);

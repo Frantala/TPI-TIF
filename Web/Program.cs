@@ -1,4 +1,5 @@
 using System.Text;
+using Infrastructure.Persistance.Seeders;
 using Application.Services;
 using Application.Interfaces;
 using Domain.Interfaces;
@@ -15,7 +16,7 @@ namespace Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -139,11 +140,32 @@ builder.Services.AddHttpClient(
             builder.Services.AddAuthorization();
             var app = builder.Build();
 
+            
             using (var scope = app.Services.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.Database.Migrate();
+                var services = scope.ServiceProvider;
+
+                var db = services.GetRequiredService<ApplicationDbContext>();
+
+                // 1. Aplicar migraciones pendientes.
+                await db.Database.MigrateAsync();
+
+                // 2. Obtener las credenciales del SuperAdmin.
+                var email = app.Configuration["InitialSuperAdmin:Email"];
+                var password = app.Configuration["InitialSuperAdmin:Password"];
+
+                if (string.IsNullOrWhiteSpace(email) ||
+                    string.IsNullOrWhiteSpace(password))
+                {
+                    throw new InvalidOperationException(
+                        "Faltan las credenciales iniciales del SuperAdmin."
+                    );
+                }
+
+                // 3. Ejecutar el Seeder.
+                await AdminSeeder.SeedAsync(db, email, password, app.Logger);
             }
+
 
             app.MapOpenApi();
 
