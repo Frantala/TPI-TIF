@@ -2,6 +2,7 @@
 using Domain.Interfaces;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
+
 namespace Infrastructure.Repositories
 {
     public class TeamRepository : GenericRepository<Team>, ITeamRepository
