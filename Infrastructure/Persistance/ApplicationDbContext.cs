@@ -83,7 +83,15 @@ namespace Infrastructure.Persistance
                 ct.Season
             })
             .IsUnique();
+
+            modelBuilder.Entity<Competition>()
+                .HasIndex(c => c.ExternalId)
+                .IsUnique();
+            modelBuilder.Entity<Team>()
+                .HasIndex(t => t.ExternalId)
+                .IsUnique();
         }
+
 
     }
 }

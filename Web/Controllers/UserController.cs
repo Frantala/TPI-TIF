@@ -19,14 +19,14 @@ namespace Web.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "user, Admin,SuperAdmin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<List<UserDto>>> GetAll()
         {
             return Ok(await _userService.GetAllAsync());
         }
 
         [HttpGet("{id:int}", Name = "GetUserById")]
-        [Authorize(Roles = "user, Admin,SuperAdmin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<UserDto>> GetById(int id)
         {
             var user = await _userService.GetByIdAsync(id);
