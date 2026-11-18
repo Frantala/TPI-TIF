@@ -2,9 +2,8 @@ using Domain.Entities;
 
 namespace Domain.Interfaces
 {
-    public interface ICompetitionRepository
+    public interface ICompetitionRepository : IGenericRepository<Competition>
     {
-        Task<List<Competition>> GetAllAsync();
         Task<Competition?> GetByExternalIdAsync(int externalId);
         Task<List<Competition>> GetByExternalIdsAsync(IEnumerable<int> externalIds);
         Task AddRangeAsync(IEnumerable<Competition> competitions);

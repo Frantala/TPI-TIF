@@ -1,4 +1,5 @@
 using System.Text;
+using Infrastructure.Persistance.Seeders;
 using Application.Services;
 using Application.Interfaces;
 using Domain.Interfaces;
@@ -7,6 +8,7 @@ using Infrastructure.Repositories;
 using Infrastructure.ExternalServices.ApiFootball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
 using Microsoft.IdentityModel.Tokens;
 using NSwag.AspNetCore;
@@ -15,7 +17,7 @@ namespace Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,7 @@ namespace Web
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString,
                    sql => sql.EnableRetryOnFailure()));
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserServices, UserService>();
             builder.Services.AddScoped<ICompetitionExternalService, CompetitionExternalService>();
@@ -37,7 +40,6 @@ namespace Web
             builder.Services.AddScoped<ICompetitionRepository, CompetitionRepository>();
             builder.Services.AddScoped<ICompetitionService, CompetitionService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
-
 
             var jwtKey = builder.Configuration["JwtSettings:SecretKey"]
                 ?? throw new InvalidOperationException(
@@ -78,17 +80,27 @@ namespace Web
                         BearerFormat = "JWT"
                     });
 
-                    var securityRequirements = document.Security;
-                    if (securityRequirements is null)
-                    {
-                        securityRequirements = [];
-                        document.Security = securityRequirements;
-                    }
+                    return Task.CompletedTask;
+                });
+                options.AddOperationTransformer((operation, context, _) =>
+                {
+                    var endpointMetadata =
+                        context.Description.ActionDescriptor.EndpointMetadata;
+                    var allowsAnonymous =
+                        endpointMetadata.OfType<IAllowAnonymous>().Any();
+                    var requiresAuthorization =
+                        endpointMetadata.OfType<IAuthorizeData>().Any();
 
-                    securityRequirements.Add(new OpenApiSecurityRequirement
+                    if (requiresAuthorization && !allowsAnonymous)
                     {
-                        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-                    });
+                        operation.Security ??= [];
+                        operation.Security.Add(new OpenApiSecurityRequirement
+                        {
+                            [new OpenApiSecuritySchemeReference(
+                                "Bearer",
+                                context.Document)] = []
+                        });
+                    }
 
                     return Task.CompletedTask;
                 });
@@ -143,11 +155,32 @@ builder.Services.AddHttpClient(
             builder.Services.AddAuthorization();
             var app = builder.Build();
 
+            
             using (var scope = app.Services.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.Database.Migrate();
+                var services = scope.ServiceProvider;
+
+                var db = services.GetRequiredService<ApplicationDbContext>();
+
+                // 1. Aplicar migraciones pendientes.
+                await db.Database.MigrateAsync();
+
+                // 2. Obtener las credenciales del SuperAdmin.
+                var email = app.Configuration["InitialSuperAdmin:Email"];
+                var password = app.Configuration["InitialSuperAdmin:Password"];
+
+                if (string.IsNullOrWhiteSpace(email) ||
+                    string.IsNullOrWhiteSpace(password))
+                {
+                    throw new InvalidOperationException(
+                        "Faltan las credenciales iniciales del SuperAdmin."
+                    );
+                }
+
+                // 3. Ejecutar el Seeder.
+                await AdminSeeder.SeedAsync(db, email, password, app.Logger);
             }
+
 
             app.MapOpenApi();
 

@@ -5,38 +5,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class TeamRepository : ITeamRepository
+    public class TeamRepository : GenericRepository<Team>, ITeamRepository
     {
-        private readonly ApplicationDbContext _context;
-
-        public TeamRepository(ApplicationDbContext context)
+        public TeamRepository(ApplicationDbContext context) : base(context)
         {
-            _context = context;
         }
 
-        public async Task<Team?> GetByIdAsync(int id)
-        {
-            return await _context.Teams.FirstOrDefaultAsync(team => team.Id == id);
-        }
-        public async Task<List<Team>> GetAllAsync() =>
-            await _context.Teams.OrderBy(t => t.TeamName).ToListAsync();
+        public override async Task<List<Team>> GetAllAsync() =>
+            await Context.Teams.OrderBy(t => t.TeamName).ToListAsync();
 
         public async Task<List<Team>> GetByExternalIdsAsync(IEnumerable<int> externalIds)
         {
             var ids = externalIds.ToList();
-            return await _context.Teams.Where(t => ids.Contains(t.ExternalId)).ToListAsync();
+            return await Context.Teams.Where(t => ids.Contains(t.ExternalId)).ToListAsync();
         }
 
         public async Task AddRangeAsync(IEnumerable<Team> teams)
         {
-            await _context.Teams.AddRangeAsync(teams);
-            await _context.SaveChangesAsync();
+            await Context.Teams.AddRangeAsync(teams);
+            await Context.SaveChangesAsync();
         }
 
         public async Task UpdateRangeAsync(IEnumerable<Team> teams)
         {
-            _context.Teams.UpdateRange(teams);
-            await _context.SaveChangesAsync();
+            Context.Teams.UpdateRange(teams);
+            await Context.SaveChangesAsync();
         }
     }
 }

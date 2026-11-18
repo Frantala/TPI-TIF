@@ -5,45 +5,46 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class CompetitionRepository : ICompetitionRepository
+    public class CompetitionRepository : GenericRepository<Competition>, ICompetitionRepository
     {
-        private readonly ApplicationDbContext _context;
-        public CompetitionRepository(ApplicationDbContext context) => _context = context;
+        public CompetitionRepository(ApplicationDbContext context) : base(context)
+        {
+        }
 
-        public async Task<List<Competition>> GetAllAsync() =>
-            await _context.Competitions.OrderBy(c => c.Name).ToListAsync();
+        public override async Task<List<Competition>> GetAllAsync() =>
+            await Context.Competitions.OrderBy(c => c.Name).ToListAsync();
 
         public async Task<Competition?> GetByExternalIdAsync(int externalId) =>
-            await _context.Competitions.FirstOrDefaultAsync(c => c.ExternalId == externalId);
+            await Context.Competitions.FirstOrDefaultAsync(c => c.ExternalId == externalId);
 
         public async Task<List<Competition>> GetByExternalIdsAsync(IEnumerable<int> externalIds)
         {
             var ids = externalIds.ToList();
-            return await _context.Competitions.Where(c => ids.Contains(c.ExternalId)).ToListAsync();
+            return await Context.Competitions.Where(c => ids.Contains(c.ExternalId)).ToListAsync();
         }
 
         public async Task AddRangeAsync(IEnumerable<Competition> competitions)
         {
-            await _context.Competitions.AddRangeAsync(competitions);
-            await _context.SaveChangesAsync();
+            await Context.Competitions.AddRangeAsync(competitions);
+            await Context.SaveChangesAsync();
         }
 
         public async Task UpdateRangeAsync(IEnumerable<Competition> competitions)
         {
-            _context.Competitions.UpdateRange(competitions);
-            await _context.SaveChangesAsync();
+            Context.Competitions.UpdateRange(competitions);
+            await Context.SaveChangesAsync();
         }
 
         public async Task<List<int>> GetLinkedTeamIdsAsync(int competitionId, int season) =>
-            await _context.CompetitionTeams
+            await Context.CompetitionTeams
                 .Where(ct => ct.CompetitionId == competitionId && ct.Season == season)
                 .Select(ct => ct.TeamId)
                 .ToListAsync();
 
         public async Task AddCompetitionTeamsAsync(IEnumerable<CompetitionTeam> links)
         {
-            await _context.CompetitionTeams.AddRangeAsync(links);
-            await _context.SaveChangesAsync();
+            await Context.CompetitionTeams.AddRangeAsync(links);
+            await Context.SaveChangesAsync();
         }
     }
 }
